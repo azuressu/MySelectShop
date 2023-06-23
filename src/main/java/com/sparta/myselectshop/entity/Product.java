@@ -42,6 +42,9 @@ public class Product extends Timestamped{
     private User user;
 
     @OneToMany(mappedBy = "product") // 타겟팅이 되는 엔티티의 필드 (조인 컬럼으로 관계를 맺고 있는 그 컬럼명)
+    /* 여기는 지연 로딩으로 설정되어있음. 이를 즉시 로딩으로 바꿀지 아니면 지연 로딩 조회 기능을 사용할까? 결정해야 함
+    * 다만, 우리가 Product를 조회 할 때마다 계속해서 무조건 ProductFolderList 정보가 필요하다고 한다면 즉시 로딩이 좋고,
+    * 그게 아니라 때에 따라서 필요할 수도 있고, 아닐수도 있다고 하면 지금 상태인 지연 로딩으로 놔두기 */
     private List<ProductFolder> productFolderList = new ArrayList<>();
 
     public Product(ProductRequestDto requestDto, User user){

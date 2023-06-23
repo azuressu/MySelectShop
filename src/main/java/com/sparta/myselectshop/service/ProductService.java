@@ -49,6 +49,7 @@ public class ProductService {
         return new ProductResponseDto(product);
     }
 
+    @Transactional(readOnly = true) // 지연 로딩 기능 사용을 위한 에너테이션
     public Page<ProductResponseDto> getProducts(User user, int page, int size, String sortBy, boolean isAsc) {
         // 정렬
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC; // true면 오름차순 false면 내림차순
