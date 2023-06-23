@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -37,6 +40,9 @@ public class Product extends Timestamped{
     @ManyToOne(fetch = FetchType.LAZY) // 제품을 선택할 때마다 고객 정보다 늘 필요한 것이 아님(정말 필요할 때만 조회할 수 있도록)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "product") // 타겟팅이 되는 엔티티의 필드 (조인 컬럼으로 관계를 맺고 있는 그 컬럼명)
+    private List<ProductFolder> productFolderList = new ArrayList<>();
 
     public Product(ProductRequestDto requestDto, User user){
         this.title = requestDto.getTitle();
