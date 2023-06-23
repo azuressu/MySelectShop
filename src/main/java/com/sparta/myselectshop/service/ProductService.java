@@ -8,6 +8,7 @@ import com.sparta.myselectshop.naver.dto.ItemDto;
 import com.sparta.myselectshop.repository.FolderRepository;
 import com.sparta.myselectshop.repository.ProductFolderRepository;
 import com.sparta.myselectshop.repository.ProductRepository;
+import com.sparta.myselectshop.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -105,6 +106,24 @@ public class ProductService {
         
         productFolderRepository.save(new ProductFolder(product, folder)); // 외래키 설정으로 두개를 넣어주어야 함
     }
+
+    public Page<ProductResponseDto> getProductsInFolder(Long folderId, int page, int size, String sortBy, boolean isAsc, User user) {
+        // 정렬
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC; // true면 오름차순 false면 내림차순
+        Sort sort = Sort.by(direction, sortBy);
+
+        // 페이징 처리하기 위한 Pageable 객체
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Product> products = productRepository.findAllByUserAndProductFolderList_FolderId(user, folderId, pageable);
+
+        // 변환하기
+        Page<ProductResponseDto> responseDtoList = products.map(ProductResponseDto::new);
+
+        return responseDtoList;
+    }
+
+    // 페이지네이션 메소드 만들어보기 !! - pageable 타입을 반환하도록
 
 //    public List<ProductResponseDto> getAllProducts() {
 //        List<Product> productList = productRepository.findAll();// findAll(): select * from product;
