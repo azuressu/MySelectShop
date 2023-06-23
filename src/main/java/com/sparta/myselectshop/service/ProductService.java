@@ -3,10 +3,10 @@ package com.sparta.myselectshop.service;
 import com.sparta.myselectshop.dto.ProductMyPriceRequestDto;
 import com.sparta.myselectshop.dto.ProductRequestDto;
 import com.sparta.myselectshop.dto.ProductResponseDto;
-import com.sparta.myselectshop.entity.Product;
-import com.sparta.myselectshop.entity.User;
-import com.sparta.myselectshop.entity.UserRoleEnum;
+import com.sparta.myselectshop.entity.*;
 import com.sparta.myselectshop.naver.dto.ItemDto;
+import com.sparta.myselectshop.repository.FolderRepository;
+import com.sparta.myselectshop.repository.ProductFolderRepository;
 import com.sparta.myselectshop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,12 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final FolderRepository folderRepository;
+    private final ProductFolderRepository productFolderRepository;
 
     public static final int MIN_MY_PRICE = 100;
 
@@ -77,6 +80,30 @@ public class ProductService {
                 new NullPointerException("해당 상품은 존재하지 않습니다."));
 
         product.updateByItemDto(itemDto);
+    }
+
+    public void addFolder(Long productId, Long folderId, User user) {
+        Product product = productRepository.findById(productId).orElseThrow(
+                () -> new NullPointerException("해당 상품이 존재하지 않습니다."));
+
+        Folder folder = folderRepository.findById(folderId).orElseThrow(
+                () -> new NullPointerException("해당 폴더가 존재하지 않습니다."));
+
+        if (!product.getUser().getId().equals(user.getId())
+                || !folder.getUser().getId().equals(user.getId())) { // 해당하지 않으면 (고객이 다르면?)
+            throw new IllegalArgumentException("회원 님의 관심상품이 아니거나, 회원님의 폴더가 아닙니다.");
+        }
+
+        // 중복 확인 이미 등록된 폴더인지 확인하자
+        // 예로, 디지털 기기라는 폴더를 만들어서 맥북을 넣어놨는데, 또 넣으려고 한다면? 안됨 !!
+        Optional<ProductFolder> overlapFolder = productFolderRepository.findByProductAndFolder(product, folder);
+
+        // 실제로 데이터 들어있는지 확인
+        if (overlapFolder.isPresent()) {
+            throw new IllegalArgumentException("중복된 폴더입니다.");
+        }
+        
+        productFolderRepository.save(new ProductFolder(product, folder)); // 외래키 설정으로 두개를 넣어주어야 함
     }
 
 //    public List<ProductResponseDto> getAllProducts() {

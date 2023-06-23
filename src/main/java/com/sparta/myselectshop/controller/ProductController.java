@@ -4,6 +4,7 @@ import com.sparta.myselectshop.dto.ProductMyPriceRequestDto;
 import com.sparta.myselectshop.dto.ProductRequestDto;
 import com.sparta.myselectshop.dto.ProductResponseDto;
 import com.sparta.myselectshop.entity.Product;
+import com.sparta.myselectshop.entity.User;
 import com.sparta.myselectshop.security.UserDetailsImpl;
 import com.sparta.myselectshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,15 @@ public class ProductController {
         return productService.getProducts(userDetails.getUser(),
                 page-1, size, sortBy, isAsc);  // 실제 pagable에서는 페이지가 0부터 시작되기 때문
     }
+
+    @PostMapping("/products/{productId}/folder")
+    public void addFolder(@PathVariable Long productId,
+                          @RequestParam Long folderId,
+                          @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        productService.addFolder(productId, folderId, userDetails.getUser());
+    }
+
+
 
 //    @GetMapping("/admin/products")
 //    public List<ProductResponseDto> getAllProducts() {
