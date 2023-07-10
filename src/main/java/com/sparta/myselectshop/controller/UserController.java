@@ -1,11 +1,16 @@
 package com.sparta.myselectshop.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.myselectshop.dto.SignupRequestDto;
 import com.sparta.myselectshop.dto.UserInfoDto;
 import com.sparta.myselectshop.entity.UserRoleEnum;
+import com.sparta.myselectshop.jwt.JwtUtil;
 import com.sparta.myselectshop.security.UserDetailsImpl;
 import com.sparta.myselectshop.service.FolderService;
+import com.sparta.myselectshop.service.KakaoService;
 import com.sparta.myselectshop.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,6 +31,7 @@ public class UserController {
 
     private final UserService userService;
     private final FolderService folderService;
+    private final KakaoService kakaoService;
 
     @GetMapping("/user/login-page")
     public String loginPage() {
@@ -74,6 +77,22 @@ public class UserController {
         model.addAttribute("folders", folderService.getFolders(userDetails.getUser()));
 
         return "index :: #fragment";
+    }
+
+    @GetMapping("/user/kakao/callback")
+    public String kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
+        String token = kakaoService.kakaoLogin(code);
+
+        // kakao Service로부터 만들어진 토큰을 가져와서, cookie를 만들어줌
+        // token의 공백이 허용되지 않는데 그냥 넣고 있어서 오류가 나고 있었음
+        // 그냥 우리가 만들어둔 token 에서 앞의 Bearer 을 제외하고 가져온다
+        Cookie cookie = new Cookie(JwtUtil.AUTHORIZATION_HEADER, token.substring(7));
+        // cookie의 path는 "/" - 메인페이지
+        cookie.setPath("/");
+        // response에 쿠키를 담아줌
+        response.addCookie(cookie);
+        // 메인 페이지로 다시 리다이렉트
+        return "redirect:/";
     }
 
 }
