@@ -12,17 +12,21 @@ import com.sparta.myselectshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 @Slf4j(topic = "KAKAO Login")
@@ -108,11 +112,30 @@ public class KakaoService {
         headers.add("Authorization", "Bearer " + accessToken);
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
-        // HTTP 요청 받기
+        // HTTP 요청 보내기
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
                 .post(uri) // -> 궁금하네 ...
                 .headers(headers)
                 .body(new LinkedMultiValueMap<>()); // LinkedMultiValueMap<>()
+
+        // MultiValueMap을 넣으면, 추상 클래스라 안된다 -> 그의 구현체가 LinkedMultiValueMap이고,
+        // Entity에 들어갈 타입과 body의 들어갈 타입이 일치해야 한다
+
+        // request 할 때 사용자 로그인 정보 게정이나 비밀번호를 넣어서 같이 보내줘야 하는 경우에는 body에 넣어주지만
+        // 지금 요청할 때는 body에 넣지 않고 accessToken만 넣어서 보내주는 경우이기 때문에 굳이 넣을 필요는 없다..!
+
+        // 결국 여기서 post를 쓰는 이유?
+        // post를 쓰는 경우는 한 번 요청을 하고, 어떤 상태를 변화시킬 때 post 요청을 쓴다.
+        // 로그인 같은 경우는 좀 애매한데, 사용자의 인증정보를 제공해서 사용자의 정보를 가져오는 행위인데
+        // api 설계 상으로 봐서는 get이 맞다.
+        // 하지만 이거를 post로도 지원하는 경우는, 아마 리퀘스트에 들어가는 password 때문일 것
+        // requestbody에 넣어서 password를 넣어주는 경우..
+        // password가 ?param에 찍히면 안되니까 ,, body에 담아서 post 요청으로 해결하는 경우가 잇다 (보안상의 이유로)
+        // 로그인 api를 굳이 요청한다면 웬만하면 post 요청을 사용하기는 한다 (보안상의 이유로. password를 입력하는 경우로 !)
+        // 지금 같은 경우는 access의 인증정보를 가져오는 경우이기 대문에 get을 사용해도 됨
+
+//        RequestEntity<String> requestEntity1 = new RequestEntity<>(headers, HttpMethod.GET, uri);
+//        RequestEntity<String> requestEntity2 = new RequestEntity<>(headers, HttpMethod.POST, uri);
 
         // HTTP
         ResponseEntity<String> response = restTemplate.exchange( // exchange는 body에도 넣는데 header에도 넣음
