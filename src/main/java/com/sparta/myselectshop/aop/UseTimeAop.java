@@ -39,6 +39,7 @@ public class UseTimeAop {
         // try가 전, finally가 후
         try {
             // 핵심기능 수행 (해당하는 컨트롤러의 메소드를 수행시킨다는 의미)
+            // "joinPoint.proceed()" 에 의해서 원래 호출하려고 했던 함수, 인수(argument) 가 전달됨
             Object output = joinPoint.proceed();
             return output;
         } finally {
