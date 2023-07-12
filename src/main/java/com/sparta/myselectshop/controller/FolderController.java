@@ -38,18 +38,5 @@ public class FolderController {
     // 컨트롤러 안에서 IllegalArgumentException 이 터졌을 때 이걸 잡아챈다
     // 그리고 파타미러토 IllegalArgumentException을 받아오고 거기서 message를 뽑아내고 있다
     // @ExceptionHandler은 spring에서 예외처리를 잡기 위해서 사용하는 에너테이션으로 여기에서 발생한 예외 처리를 위해 사용된다
-    @ExceptionHandler({IllegalArgumentException.class})
-    public ResponseEntity<RestApiException> handleException(IllegalArgumentException ex) {
-        System.out.println("FolderController.handleException"); // soutm: 해당 클래스의 어떤 메서드인지
-        RestApiException restApiException = new RestApiException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(
-                // HTTP BODY
-                restApiException,
-                // HTTP Status Code
-                HttpStatus.BAD_REQUEST
-        );
-
-    }
-
 
 }
